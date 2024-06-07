@@ -1,11 +1,13 @@
+
+from rest_framework import generics
 from django.shortcuts import render
 from rest_framework.response import Response
 from .models import Blogs,User,Comments
 from .serializers import BlogsSerializer,CommentSerializer,UserSerializer
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.views import APIView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import permissions
 
 class BlogsViewSet(viewsets.ViewSet):
     
@@ -42,9 +44,10 @@ class BloggersViewset(viewsets.ViewSet):
         user_serializer = UserSerializer(user)
         return Response({'blog': user_serializer.data})
     
-
-
 class AddCommentViewset(viewsets.ViewSet):
+
+    permission_classes = [permissions.IsAuthenticated]
+    
     def create(self, request):
         serializer = CommentSerializer(data=request.data)
         print("serializer ===========> ",serializer)
