@@ -4,22 +4,12 @@ from .serializers import BlogsSerializer,CommentSerializer,UserSerializer
 from rest_framework import viewsets, permissions,status
 from rest_framework.response import Response
 
-    
-class CustomPageNumberPagination(PageNumberPagination):
-    def get_paginated_response(self, data):
-        return Response({
-            'count': self.page.paginator.count,
-            'page_size': self.page_size, 
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'results': data
-        })
 
 class BlogsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         blog = Blogs.objects.all()
-        paginator = CustomPageNumberPagination()  
+        paginator = PageNumberPagination()  
         paginator.page_size = 2  
         paginated_comments = paginator.paginate_queryset(blog, request)
         blog_serializer = BlogsSerializer(paginated_comments, many=True)
