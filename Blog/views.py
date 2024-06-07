@@ -1,22 +1,31 @@
-
-from rest_framework import generics
-from django.shortcuts import render
-from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from .models import Blogs,User,Comments
 from .serializers import BlogsSerializer,CommentSerializer,UserSerializer
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import permissions
+from rest_framework import viewsets, permissions,status
+from rest_framework.response import Response
+
+    
+class CustomPageNumberPagination(PageNumberPagination):
+    def get_paginated_response(self, data):
+        return Response({
+            'count': self.page.paginator.count,
+            'page_size': self.page_size, 
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data
+        })
 
 class BlogsViewSet(viewsets.ViewSet):
-    
-    def list(self,request):
+
+    def list(self, request):
         blog = Blogs.objects.all()
-        blog_serializer = BlogsSerializer(blog, many = True)
-        return Response(blog_serializer.data)
+        paginator = CustomPageNumberPagination()  
+        paginator.page_size = 2  
+        paginated_comments = paginator.paginate_queryset(blog, request)
+        blog_serializer = BlogsSerializer(paginated_comments, many=True)
+        return paginator.get_paginated_response(blog_serializer.data)
     
-    def retrieve(self, request,pk=None):
+    def retrieve(self, request, pk=None):
         try:
             blog = Blogs.objects.get(pk=pk)
         except Blogs.DoesNotExist:
@@ -27,6 +36,8 @@ class BlogsViewSet(viewsets.ViewSet):
         comments_serializer = CommentSerializer(comments, many=True)
 
         return Response({'blog': blog_serializer.data, 'comments': comments_serializer.data})
+
+    
 
 class BloggersViewset(viewsets.ViewSet):
     
@@ -55,3 +66,4 @@ class AddCommentViewset(viewsets.ViewSet):
             serializer.save(user=request.user)  
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
