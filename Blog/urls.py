@@ -33,8 +33,9 @@ router.register("add/comment", views.AddCommentViewset, basename="add_comment")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("login/", TokenObtainPairView.as_view(), name="    "),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="verify"),
+    path('register/', views.RegisterView.as_view(), name='auth_register'),
     path("auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
