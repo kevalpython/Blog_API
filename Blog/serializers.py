@@ -95,3 +95,17 @@ class UserSerializer(serializers.ModelSerializer):
 
         model = User
         fields = "__all__"
+        
+        
+class UserActivationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the User Activation model.
+    """
+
+    class Meta:
+        """
+        Metadata options for the UserSerializer.
+        """
+
+        model = User
+        fields = ["id", "username","is_active"]

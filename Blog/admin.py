@@ -33,7 +33,7 @@ class BlogsAdmin(admin.ModelAdmin):
     This class displays blogs in the admin panel.
     """
 
-    list_display = ["title", "descriptions", "author", "created_at", "updated_at"]
+    list_display = ["id","title", "descriptions", "author", "created_at", "updated_at"]
 
     def descriptions(self, obj):
         """

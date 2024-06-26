@@ -30,6 +30,8 @@ router = DefaultRouter()
 router.register("blogs", views.BlogsViewSet, basename="blogs")
 router.register("bloggers", views.BloggersViewset, basename="bloggers")
 router.register("add/comment", views.AddCommentViewset, basename="add_comment")
+router.register("users", views.UserViewSet, basename="user")
+
 
 urlpatterns = [
     path("", include(router.urls)),

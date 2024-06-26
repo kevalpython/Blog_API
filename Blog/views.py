@@ -5,12 +5,12 @@ This module contains views for passing data to the frontend or user.
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAdminUser
 from rest_framework.response import Response
 
 from .models import Blogs, Comments, User
 from .serializers import (BlogsSerializer, CommentSerializer,
-                          RegisterSerializer, UserSerializer)
+                          RegisterSerializer, UserSerializer,UserActivationSerializer)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -126,12 +126,6 @@ class BloggersViewset(viewsets.ViewSet):
         """
         Retrieve a single blogger.
 
-        working on Django Rest Framework task
-        working singup and login auth views
-        working on active blogger and deactive blogger in DRF task
-        working crud operation by login user on own blogs
-
-
         Args:
             request: The request object.
             pk (int): The primary key of the blogger.
@@ -175,3 +169,33 @@ class AddCommentViewset(viewsets.ViewSet):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(viewsets.ViewSet):
+    queryset = User.objects.all().order_by('id')
+    serializer_class = UserActivationSerializer
+    permission_classes = (IsAdminUser,)
+        
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        user = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.serializer_class(user)
+        return Response(serializer.data)
+
+    def partial_update(self, request, pk=None):
+        user = get_object_or_404(self.queryset, pk=pk)
+        data = request.data
+        if 'is_active' in data:
+            new_is_active = bool(data['is_active'])
+            if user.is_active == new_is_active:
+                return Response({"detail": f"User {user.username} is already {'active' if user.is_active else 'inactive'}."})
+            else:
+                user.is_active = new_is_active
+                user.save()
+                serializer = self.serializer_class(user)
+                return Response(serializer.data)
+        else:
+            return Response({"detail": "is_active field is required in request data."}, status=status.HTTP_400_BAD_REQUEST)
